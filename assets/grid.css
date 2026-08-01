@@ -1,0 +1,59 @@
+.yards-archive-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+	gap: 12px;
+	width: 100%;
+}
+
+.yards-archive-cell {
+	position: relative;
+	aspect-ratio: 1 / 1;
+	overflow: hidden;
+	cursor: pointer;
+	background: #eee;
+	border-radius: 6px;
+}
+
+.yards-archive-cell img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform 0.3s ease;
+}
+
+.yards-archive-cell:hover img {
+	transform: scale(1.04);
+}
+
+.yards-archive-cell--locked {
+	outline: 3px solid #222;
+}
+
+.yards-archive-lock-icon {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	border-radius: 50%;
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+}
+
+.yards-archive-cell--empty {
+	background: #f4f4f4;
+}
+
+/* Sotto i 700px passa a griglia 2x4 verticale (2 colonne x 4 righe) */
+@media (max-width: 700px) {
+	.yards-archive-grid {
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: repeat(4, 1fr);
+	}
+}
