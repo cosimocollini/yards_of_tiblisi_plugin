@@ -26,9 +26,9 @@ define( 'YARDS_ARCHIVE_URL', plugin_dir_url( __FILE__ ) );
 define( 'YARDS_ARCHIVE_CPT', 'post' ); 
 
 // Caricamento classi.
-require_once YARDS_ARCHIVE_PATH . 'includes/class-cpt.php';
-require_once YARDS_ARCHIVE_PATH . 'includes/class-taxonomies.php';
-require_once YARDS_ARCHIVE_PATH . 'includes/class-meta-fields.php';
+// require_once YARDS_ARCHIVE_PATH . 'includes/class-cpt.php';
+// require_once YARDS_ARCHIVE_PATH . 'includes/class-taxonomies.php';
+// require_once YARDS_ARCHIVE_PATH . 'includes/class-meta-fields.php';
 require_once YARDS_ARCHIVE_PATH . 'includes/class-cache.php';
 require_once YARDS_ARCHIVE_PATH . 'includes/class-rest-api.php';
 
@@ -36,9 +36,9 @@ require_once YARDS_ARCHIVE_PATH . 'includes/class-rest-api.php';
  * Inizializza tutti i moduli del plugin.
  */
 function yards_archive_init() {
-	Yards_Archive_CPT::init();
-	Yards_Archive_Taxonomies::init();
-	Yards_Archive_Meta_Fields::init();
+	// Yards_Archive_CPT::init();
+	// Yards_Archive_Taxonomies::init();
+	// Yards_Archive_Meta_Fields::init();
 	Yards_Archive_Cache::init();
 	Yards_Archive_REST_API::init();
 }

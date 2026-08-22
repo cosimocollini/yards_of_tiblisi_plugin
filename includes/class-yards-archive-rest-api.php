@@ -1,15 +1,4 @@
 <?php
-/**
- * Endpoint REST: GET /wp-json/yards-archive/v1/random-grid
- *
- * Parametri accettati (query string):
- * - exclude[]   array di ID da escludere (le celle già "locked" in frontend)
- * - count       quante immagini servono (default 8, cioè le celle libere)
- *
- * Ritorna un array di oggetti { id, title, image, link } pronti da
- * disegnare lato JS, senza dover fare query SQL pesanti ad ogni chiamata.
- */
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -25,15 +14,19 @@ class Yards_Archive_REST_API {
 			'yards-archive/v1',
 			'/random-grid',
 			array(
-				'methods'             => 'GET',
-				'callback'            => array( __CLASS__, 'handle_request' ),
-				'permission_callback' => '__return_true', // endpoint pubblico, dati già pubblici
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( __CLASS__, 'handle_random_grid_request' ),
+				'permission_callback' => '__return_true',
 				'args'                => array(
 					'exclude' => array(
 						'required'          => false,
 						'default'           => array(),
-						'sanitize_callback' => function( $param ) {
-							return array_map( 'absint', (array) $param );
+						'sanitize_callback' => function ( $param ) {
+							return array_values(
+								array_filter(
+									array_map( 'absint', (array) $param )
+								)
+							);
 						},
 					),
 					'count' => array(
@@ -88,64 +81,49 @@ class Yards_Archive_REST_API {
 		);
 	}
 
-	public static function handle_request( WP_REST_Request $request ) {
-
+	public static function handle_random_grid_request( WP_REST_Request $request ) {
 		$exclude = $request->get_param( 'exclude' );
-		$count   = max( 1, min( 20, (int) $request->get_param( 'count' ) ) ); // hard cap di sicurezza
+		$count   = max( 1, min( 20, (int) $request->get_param( 'count' ) ) );
 
-		// 1. Get cached list of all published IDs, no SQL query here
-		$all_ids = Yards_Archive_Cache::get_published_ids();
-
-		// 2. Exclude locked IDs already in the grid
+		$all_ids       = Yards_Archive_Cache::get_published_ids();
 		$available_ids = array_values( array_diff( $all_ids, $exclude ) );
 
 		if ( empty( $available_ids ) ) {
 			return new WP_REST_Response( array(), 200 );
 		}
 
-		// 3. random sort in PHP, no ORDER BY RAND() in SQL.
-		$pick_count = min( $count, count( $available_ids ) );
+		$pick_count  = min( $count, count( $available_ids) );
 		$random_keys = (array) array_rand( $available_ids, $pick_count );
 		$random_ids  = array();
+
 		foreach ( $random_keys as $key ) {
 			$random_ids[] = $available_ids[ $key ];
 		}
 
-		// 4. Query mirata solo sugli ID sorteggiati: WHERE ID IN (...).
 		$query = new WP_Query(
 			array(
 				'post_type'      => YARDS_ARCHIVE_CPT,
 				'post_status'    => 'publish',
 				'post__in'       => $random_ids,
-				'orderby'        => 'post__in', // mantiene l'ordine random scelto sopra
+				'orderby'        => 'post__in',
 				'posts_per_page' => $pick_count,
 				'no_found_rows'  => true,
 			)
 		);
 
-		
 		$results = array();
-		
+
 		foreach ( $query->posts as $post ) {
 			$image_url = get_the_post_thumbnail_url( $post->ID, 'medium_large' );
-			
-			$categories = get_the_category( $post->ID );
-	
-			$category_title = '';
-			$category_link  = '';
-	
-			if ( ! empty( $categories ) ) {
-				$category_title = $categories[0]->name;
-				$category_link  = get_category_link( $categories[0]->term_id );
-			}
-			
+			$category  = self::get_primary_category( $post->ID );
+
 			$results[] = array(
-				'id'    => $post->ID,
-				'title' => get_the_title( $post ),
-				'image' => $image_url ? $image_url : '',
-				'link'  => get_permalink( $post ),
-				'category_title' => $category_title,
-				'category_link'  => $category_link,
+				'id'             => $post->ID,
+				'title'          => get_the_title( $post ),
+				'image'          => $image_url ? $image_url : '',
+				'link'           => get_permalink( $post ),
+				'category_title' => $category['title'],
+				'category_link'  => $category['link'],
 			);
 		}
 
