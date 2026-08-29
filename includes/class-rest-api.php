@@ -144,6 +144,8 @@ class Yards_Archive_REST_API {
 				'title' => get_the_title( $post ),
 				'image' => $image_url ? $image_url : '',
 				'link'  => get_permalink( $post ),
+				'author'   => get_the_author_meta( 'display_name', $post->post_author ),
+				'excerpt'  => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $post ) ?: $post->post_content ), 20 ),
 				'category_title' => $category_title,
 				'category_link'  => $category_link,
 			);
