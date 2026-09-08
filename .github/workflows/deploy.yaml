@@ -1,0 +1,33 @@
+name: CI & conditional FTP
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v6
+
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+      with:
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        port: ${{ secrets.FTP_PORT }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
+        # local-dir: ./deploy-files/js/
+        server-dir: /htdocs-SSL/wp-content/plugins/mio-archivio/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/.github*
+          **/.github*/**
+          .gitignore
+          **/node_modules/**
+          fileToExclude.txt
+        #   dry-run: true
