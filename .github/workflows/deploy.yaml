@@ -29,5 +29,6 @@ jobs:
           **/.github*/**
           .gitignore
           **/node_modules/**
+          .DS_Store
           fileToExclude.txt
         #   dry-run: true
